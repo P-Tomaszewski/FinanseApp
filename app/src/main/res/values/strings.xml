@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">FinanseApp</string>
+    <string name="finans">Twoje wydatki</string>
+    <string name="save_button">Zapisz</string>
+</resources>
