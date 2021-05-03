@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId "pl.edu.pjatk.finanseapp"
-        minSdkVersion 24
+        minSdkVersion 28
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"

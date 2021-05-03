@@ -1,5 +1,10 @@
 <resources>
     <string name="app_name">FinanseApp</string>
-    <string name="finans">Twoje wydatki</string>
+    <string name="finans">Balans:</string>
     <string name="save_button">Zapisz</string>
+
+    <string-array name="payment_type">
+        <item>Wydatek</item>
+        <item>Dochód</item>
+    </string-array>
 </resources>
