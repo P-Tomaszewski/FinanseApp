@@ -8,13 +8,14 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.os.HandlerCompat
 import androidx.recyclerview.widget.RecyclerView
-import pl.edu.pjatk.finanseapp.AddPaymentActivity
+import pl.edu.pjatk.finanseapp.activity.AddPaymentActivity
 import pl.edu.pjatk.finanseapp.PaymentViewHolder
 import pl.edu.pjatk.finanseapp.database.PaymentDatabase
-import pl.edu.pjatk.finanseapp.database.PaymentDto
 import pl.edu.pjatk.finanseapp.databinding.ItemCardPaymentBinding
 import pl.edu.pjatk.finanseapp.model.Payment
 import java.math.RoundingMode
+import java.time.LocalDate
+import java.util.*
 import kotlin.concurrent.thread
 
 
@@ -30,7 +31,8 @@ class PaymentAdapter(private val db: PaymentDatabase): RecyclerView.Adapter<Paym
        )
         return PaymentViewHolder(view).also { holder ->
             view.root.setOnLongClickListener{
-                removeItem(holder.layoutPosition,parent)
+                val item = data[holder.layoutPosition].id
+                removeItem(item,parent)
             }
             view.root.setOnClickListener{
                 val item = data[holder.layoutPosition].id
@@ -41,12 +43,8 @@ class PaymentAdapter(private val db: PaymentDatabase): RecyclerView.Adapter<Paym
         return PaymentViewHolder(view)
     }
 
-//    private fun updateItem(position: Int, parent: ViewGroup): Boolean
-//    {
-//        onBindViewHolder(, position)
-//    }
 
-    private fun removeItem(position: Int, parent: ViewGroup): Boolean
+    private fun removeItem(position: Long, parent: ViewGroup): Boolean
     {
 //        TODO: check once more
         val builder = AlertDialog.Builder(parent.context)
@@ -54,7 +52,7 @@ class PaymentAdapter(private val db: PaymentDatabase): RecyclerView.Adapter<Paym
                 .setCancelable(false)
                 .setPositiveButton("Yes") { _, _ ->
                     deleteItem(position)
-                    notifyItemChanged(position)
+//                    notifyItemChanged(position.toInt())
                 }
                 .setNegativeButton("No") { dialog, _ ->
                     dialog.dismiss()
@@ -69,16 +67,21 @@ class PaymentAdapter(private val db: PaymentDatabase): RecyclerView.Adapter<Paym
     }
     override fun getItemCount(): Int = data.size
 
-    fun getSum(): Double = sum.toBigDecimal().setScale(2, RoundingMode.UP).toDouble()
 
+//    fun getSum(): Double = sum.toBigDecimal().setScale(2, RoundingMode.UP).toDouble()
 
-    fun loadSum() = thread{
-        sum = db.payments.getSum()
-
-        main.post{
-            notifyDataSetChanged()
-        }
+    fun loadSum(): Double{
+        var sum = 0.0
+        val item = data
+            for (row in item) {
+                if (convertStringToDate(row.date).month == LocalDate.now().month) {
+                    sum += row.amount
+                }
+            }
+    return sum.toBigDecimal().setScale(2, RoundingMode.UP).toDouble()
     }
+
+
 
     fun load() = thread{
         data = db.payments.getAll().map { it.toModel() }
@@ -87,11 +90,16 @@ class PaymentAdapter(private val db: PaymentDatabase): RecyclerView.Adapter<Paym
         }
     }
 
-    fun deleteItem(position: Int){
-        val item = data[position]
+    fun deleteItem(position: Long){
         thread {
-            db.payments.deletePaymentById(item.id)
+            db.payments.deletePaymentById(position)
             load()
         }
     }
+    fun convertStringToDate(date: String): LocalDate =
+            LocalDate.of(
+                    date.substring(0, 4).toInt(),
+                    date.substring(6, 7).toInt(),
+                    date.substring(9, 10).toInt()
+            )
 }

@@ -1,18 +1,23 @@
-package pl.edu.pjatk.finanseapp
+package pl.edu.pjatk.finanseapp.activity
 
 import android.app.Activity
+import android.app.DatePickerDialog
+import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.EditText
+import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.get
 import androidx.room.Room
+import pl.edu.pjatk.finanseapp.R
 import pl.edu.pjatk.finanseapp.database.PaymentDatabase
 import pl.edu.pjatk.finanseapp.database.PaymentDto
 import pl.edu.pjatk.finanseapp.databinding.ActivityAddPaymentBinding
 import java.time.LocalDate
+import java.util.*
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
+
 
 class AddPaymentActivity : AppCompatActivity() {
     private val pool by lazy {
@@ -40,14 +45,39 @@ class AddPaymentActivity : AppCompatActivity() {
             // Apply the adapter to the spinner
             spinner.adapter = adapter
         }
-
+        setupShareButton()
 
 
         val id: Long = (intent.extras?.get("id") ?: -1L) as Long
         if(id != -1L) {
             setupSave(true, id)
-            fillWithData(id)}
+            fillWithData(id)} //nazwa do zmiany
         else setupSave(false, 0L)
+
+
+        view.paymentDate.setOnClickListener {
+            val calendar: Calendar = Calendar.getInstance()
+            val picker = DatePickerDialog(this, DatePickerDialog.OnDateSetListener {
+                view, year, month, dayOfMonth -> this.view.paymentDate.setText("$year-${(month + 1).toString().padStart(2, '0')}-${dayOfMonth.toString().padStart(2, '0')}")},
+                    calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
+            picker.show()
+        }
+    }
+
+    private fun setupShareButton() = view.share.setOnClickListener {
+        val sendIntent: Intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT,
+                    "Miejsce: " + view.paymentPlace.text + " " + "\n" +
+                            "Kategoria: " + view.paymentCategory.text + "\n" +
+                            "Data: " + view.paymentDate.text + "\n" +
+                            "Typ: " + view.spinner.selectedItem.toString() + "\n" +
+                            "Kwota: " + view.paymentAmount.text.toString())
+            type = "text/plain"
+        }
+
+        val shareIntent = Intent.createChooser(sendIntent, null)
+        startActivity(shareIntent) //share
     }
 
     private fun fillWithData(id: Long) = thread {
@@ -59,7 +89,6 @@ class AddPaymentActivity : AppCompatActivity() {
 //        findViewById<Spinner>(R.id.spinner).setSelection(transaction.type.toInt()) //Do poprawy
     }
 
-
     private fun setupSave(edit: Boolean, id: Long) = view.saveButton.setOnClickListener {
 
         if(!edit){ //new
@@ -67,7 +96,7 @@ class AddPaymentActivity : AppCompatActivity() {
                     0,
                     place = view.paymentPlace.text.toString(),
                     category = view.paymentCategory.text.toString(),
-                    amount = amountType(view.paymentAmount.text.toString() ,view.spinner.selectedItem.toString()),
+                    amount = amountType(view.paymentAmount.text.toString(), view.spinner.selectedItem.toString()),
                     date = view.paymentDate.text.toString(),
                     type = view.spinner.selectedItem.toString()
             )
@@ -82,11 +111,15 @@ class AddPaymentActivity : AppCompatActivity() {
                     id,
                     place = view.paymentPlace.text.toString(),
                     category = view.paymentCategory.text.toString(),
-                    amount = amountType(view.paymentAmount.text.toString() ,view.spinner.selectedItem.toString()),
+                    amount = amountType(view.paymentAmount.text.toString(), view.spinner.selectedItem.toString()),
                     date = view.paymentDate.text.toString(),
                     type = view.spinner.selectedItem.toString()
             )
-            updateItem(paymentDto)
+            pool.submit{
+                db.payments.updatePayment(paymentDto)
+                setResult(Activity.RESULT_OK)
+                finish()
+            }
         }
     }
 
@@ -106,13 +139,5 @@ class AddPaymentActivity : AppCompatActivity() {
                 (-1).toDouble()
             }
         } else 0.0
-    }
-
-    fun updateItem(payment: PaymentDto){
-     pool.submit{
-         db.payments.updatePayment(payment)
-         setResult(Activity.RESULT_OK)
-         finish()
-     }
     }
 }
