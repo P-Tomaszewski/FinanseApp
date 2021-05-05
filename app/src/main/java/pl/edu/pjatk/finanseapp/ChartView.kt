@@ -19,7 +19,8 @@ class ChartView(context: Context, attributeSet: AttributeSet): View(context, att
     private var xMax = 0
     private var yMin = 0
     private var yMax = 0
-
+    private var scaley1 = 0F
+    private var scalex1 = 0F
     private val dataPointPaint = Paint().apply {
         color = Color.BLUE
         strokeWidth = 7f
@@ -39,7 +40,7 @@ class ChartView(context: Context, attributeSet: AttributeSet): View(context, att
     private val textPaint = Paint().apply {
        color = Color.BLACK
         style = Paint.Style.FILL
-        textSize = 50F
+        textSize = 20f
     }
 
         private val axisLinePaint = Paint().apply {
@@ -47,51 +48,48 @@ class ChartView(context: Context, attributeSet: AttributeSet): View(context, att
         strokeWidth = 10f
     }
 
-    private val ayisLinePaint = Paint().apply {
-        color = Color.GRAY
-        strokeWidth = 5f
-    }
+
 
     override fun onDraw(canvas: Canvas) {
+
         super.onDraw(canvas)
+
+        var scaley = (height)/(yMax -yMin).toFloat()
 
         dataSet.forEachIndexed { index, currentDataPoint ->
             val realX = currentDataPoint.xVal.toRealX()
-            val realY = currentDataPoint.yVal.toRealY()
+            val realY = height - currentDataPoint.yVal.toRealY()
 
             if (index < dataSet.size - 1) {
                 val nextDataPoint = dataSet[index + 1]
                 val startX = currentDataPoint.xVal.toRealX()
                 val startY = currentDataPoint.yVal.toRealY()
                 val endX = nextDataPoint.xVal.toRealX()
-                val endY = nextDataPoint.yVal.toRealY()
-                canvas.drawLine(startX, startY, endX, endY, dataPointLinePaint)
+                val endY =  nextDataPoint.yVal.toRealY()
+                canvas.drawLine(startX  , height - startY , endX, height - endY, dataPointLinePaint)
 
             }
-
             canvas.drawCircle(realX, realY, 7f, dataPointFillPaint)
             canvas.drawCircle(realX, realY, 7f, dataPointPaint)
         }
 
-//        val all = dataSet
-
-//        var minValue: Int = 1
-//        var maxValue: Int = 20
-//        var balance = 0
-//        all.forEach {
-//            balance += it
-//            if (balance>maxValue) maxValue = balance
-//            if (balance<minValue) minValue = balance
-//        }
-//        val heightOf0 = if(maxValue>0 && minValue <0) maxValue/(maxValue+minValue.absoluteValue)
-//        else if(maxValue<=0) 0.0
-//        else 1.0
-//        val scaledHeightOf0 = height.toFloat() * .1f + height.toFloat() * .8f * heightOf0.toFloat()
+        var xMaxInt = 31
 
 
-//        canvas.drawText(dataSet.get(1).toString(), 10F, 10F, textPaint)
-        canvas.drawLine(0f, 0f, 0f, height.toFloat(), axisLinePaint)
-        canvas.drawLine(0f, height.toFloat(), width.toFloat(), height.toFloat(), axisLinePaint)
+        for (i in 0..xMaxInt) {
+            if( i % 2 != 0){
+                canvas.drawText(i.toString(),0f + i.toFloat()*((width)/xMaxInt)+40f,height-yMin*scaley + 40f,textPaint)
+            }
+        }
+
+        for (i in yMin..yMax) {
+            if( i % 10== 0){
+                canvas.drawText(i.toString(),0f,height.toFloat()-(i+ yMin)*((height)/(yMax)),textPaint)
+            }
+        }
+
+        canvas.drawLine(40f, 0f, 40f, height.toFloat(), axisLinePaint)
+        canvas.drawLine(40f, height-yMin*scaley, width.toFloat(), height-yMin*scaley, axisLinePaint)
     }
 
     fun setData(newDataSet: List<DataPoint>) {
@@ -104,7 +102,7 @@ class ChartView(context: Context, attributeSet: AttributeSet): View(context, att
         invalidate()
     }
 
-    private fun Int.toRealX() = toFloat() / xMax * width
+    private fun Int.toRealX() = toFloat() / xMax  * width
     private fun Int.toRealY() = toFloat()  / yMax * height
 }
 

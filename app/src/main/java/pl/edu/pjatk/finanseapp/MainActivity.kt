@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
         setupPaymentList()
         setupAddButton()
         setupChartButton()
-        updateSum()
+        setupSum()
     }
 
     private fun setupPaymentList() {
@@ -44,34 +44,42 @@ class MainActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(context)
         }
         paymentAdapter.load()
+
     }
 
 
     private fun setupAddButton() = binding.buttonAdd.setOnClickListener {
         val intent = Intent(this, AddPaymentActivity::class.java)
         startActivityForResult(
-                intent, REQUEST_ADD_PAYMENT
+            intent, REQUEST_ADD_PAYMENT
         )
     }
 
     private fun setupChartButton() = binding.buttonChart.setOnClickListener {
         val intent = Intent(this, ChartActivity::class.java)
         startActivityForResult(
-                intent, REQUEST_ADD_PAYMENT
+            intent, REQUEST_ADD_PAYMENT
         )
     }
 
-    private fun updateSum() = thread {
-        runOnUiThread() {
-            findViewById<TextView>(R.id.balance).text = paymentAdapter.loadSum().toString()
+    private fun setupSum() {
+        thread {
+            findViewById<TextView>(
+                R.id
+                    .balance
+            ).text = paymentAdapter.loadSum().toString()
         }
     }
 
 
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_ADD_PAYMENT && resultCode == Activity.RESULT_OK) {
-            updateSum()
-            paymentAdapter.load()
+                paymentAdapter.load()
+            findViewById<TextView>(
+                    R.id
+                        .balance
+                ).text = paymentAdapter.updateSum().toString()
 
         } else
             super.onActivityResult(requestCode, resultCode, data)

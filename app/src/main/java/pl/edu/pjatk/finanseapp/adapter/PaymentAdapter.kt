@@ -46,13 +46,11 @@ class PaymentAdapter(private val db: PaymentDatabase): RecyclerView.Adapter<Paym
 
     private fun removeItem(position: Long, parent: ViewGroup): Boolean
     {
-//        TODO: check once more
         val builder = AlertDialog.Builder(parent.context)
         builder.setMessage("Are you sure you want to Delete?")
                 .setCancelable(false)
                 .setPositiveButton("Yes") { _, _ ->
                     deleteItem(position)
-//                    notifyItemChanged(position.toInt())
                 }
                 .setNegativeButton("No") { dialog, _ ->
                     dialog.dismiss()
@@ -68,26 +66,34 @@ class PaymentAdapter(private val db: PaymentDatabase): RecyclerView.Adapter<Paym
     override fun getItemCount(): Int = data.size
 
 
-//    fun getSum(): Double = sum.toBigDecimal().setScale(2, RoundingMode.UP).toDouble()
-
-    fun loadSum(): Double{
-        var sum = 0.0
-        val item = data
-            for (row in item) {
-                if (convertStringToDate(row.date).month == LocalDate.now().month) {
-                    sum += row.amount
-                }
-            }
-    return sum.toBigDecimal().setScale(2, RoundingMode.UP).toDouble()
-    }
-
-
 
     fun load() = thread{
         data = db.payments.getAll().map { it.toModel() }
         main.post{
             notifyDataSetChanged()
         }
+    }
+
+    fun loadSum(): Double{
+        var sum = 0.0
+        var data = db.payments.getAll()
+        for (row in data) {
+            if (convertStringToDate(row.date).month == LocalDate.now().month) {
+                sum += row.amount
+            }
+        }
+        return sum.toBigDecimal().setScale(2, RoundingMode.UP).toDouble()
+    }
+
+    fun updateSum(): Double{
+        var sum = 0.0
+        load()
+        for (row in data) {
+            if (convertStringToDate(row.date).month == LocalDate.now().month) {
+                sum += row.amount
+            }
+        }
+        return sum.toBigDecimal().setScale(2, RoundingMode.UP).toDouble()
     }
 
     fun deleteItem(position: Long){
@@ -100,6 +106,6 @@ class PaymentAdapter(private val db: PaymentDatabase): RecyclerView.Adapter<Paym
             LocalDate.of(
                     date.substring(0, 4).toInt(),
                     date.substring(6, 7).toInt(),
-                    date.substring(9, 10).toInt()
+                    date.substring(8, 10).toInt()
             )
 }

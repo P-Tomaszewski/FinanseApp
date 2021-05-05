@@ -34,15 +34,12 @@ class AddPaymentActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(view.root)
         val spinner: Spinner = findViewById(R.id.spinner)
-// Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter.createFromResource(
                 this,
                 R.array.payment_type,
                 android.R.layout.simple_spinner_item
         ).also { adapter ->
-            // Specify the layout to use when the list of choices appears
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            // Apply the adapter to the spinner
             spinner.adapter = adapter
         }
         setupShareButton()
@@ -51,7 +48,7 @@ class AddPaymentActivity : AppCompatActivity() {
         val id: Long = (intent.extras?.get("id") ?: -1L) as Long
         if(id != -1L) {
             setupSave(true, id)
-            fillWithData(id)} //nazwa do zmiany
+            templateWithData(id)}
         else setupSave(false, 0L)
 
 
@@ -80,13 +77,12 @@ class AddPaymentActivity : AppCompatActivity() {
         startActivity(shareIntent) //share
     }
 
-    private fun fillWithData(id: Long) = thread {
+    private fun templateWithData(id: Long) = thread {
         val transaction = db.payments.getPaymentById(id)
         findViewById<EditText>(R.id.payment_place).setText(transaction.place)
         findViewById<EditText>(R.id.payment_amount).setText(transaction.amount.toString())
         findViewById<EditText>(R.id.payment_date).setText(transaction.date)
         findViewById<EditText>(R.id.payment_category).setText(transaction.category)
-//        findViewById<Spinner>(R.id.spinner).setSelection(transaction.type.toInt()) //Do poprawy
     }
 
     private fun setupSave(edit: Boolean, id: Long) = view.saveButton.setOnClickListener {
@@ -97,10 +93,9 @@ class AddPaymentActivity : AppCompatActivity() {
                     place = view.paymentPlace.text.toString(),
                     category = view.paymentCategory.text.toString(),
                     amount = amountType(view.paymentAmount.text.toString(), view.spinner.selectedItem.toString()),
-                    date = view.paymentDate.text.toString(),
+                    date = setDate(view.paymentDate.text.toString()),
                     type = view.spinner.selectedItem.toString()
             )
-
         pool.submit {
             db.payments.insert(paymentDto)
             setResult(Activity.RESULT_OK)
@@ -112,7 +107,7 @@ class AddPaymentActivity : AppCompatActivity() {
                     place = view.paymentPlace.text.toString(),
                     category = view.paymentCategory.text.toString(),
                     amount = amountType(view.paymentAmount.text.toString(), view.spinner.selectedItem.toString()),
-                    date = view.paymentDate.text.toString(),
+                    date = setDate(view.paymentDate.text.toString()),
                     type = view.spinner.selectedItem.toString()
             )
             pool.submit{
@@ -123,8 +118,15 @@ class AddPaymentActivity : AppCompatActivity() {
         }
     }
 
+    private fun setDate(date: String): String{
+        if(date.isNullOrEmpty()){
+            return LocalDate.now().toString()
+        }
+        else return date
+    }
+
     private fun amountType(amount: String, type: String): Double{
-        return if(type == "Wydatek"){
+        return if(type == "Wydatek" && amount.isNotEmpty()){
             ParseDouble("-$amount")
         } else
             ParseDouble(amount)
