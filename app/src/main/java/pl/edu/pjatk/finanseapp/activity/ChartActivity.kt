@@ -4,18 +4,12 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.room.Room
 import kotlinx.android.synthetic.main.activity_chart.*
-import kotlinx.android.synthetic.main.activity_main.*
 import pl.edu.pjatk.finanseapp.DataPoint
 
 import pl.edu.pjatk.finanseapp.R
-import pl.edu.pjatk.finanseapp.adapter.PaymentAdapter
 import pl.edu.pjatk.finanseapp.database.PaymentDatabase
 import pl.edu.pjatk.finanseapp.database.PaymentDto
-import pl.edu.pjatk.finanseapp.databinding.ActivityAddPaymentBinding
-import pl.edu.pjatk.finanseapp.databinding.ActivityMainBinding
 import java.time.LocalDate
-import java.util.*
-import java.util.concurrent.Executors
 import kotlin.concurrent.thread
 
 
@@ -30,7 +24,7 @@ class ChartActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         getData()
         setContentView(R.layout.activity_chart)
-        chart_view.setData(generateRandomDataPoints(data))
+        chart_view.setData(setData(data))
 
 
     }
@@ -39,8 +33,7 @@ class ChartActivity : AppCompatActivity() {
         data = db.payments.getAll()
     }
 
-    private fun generateRandomDataPoints(dataList: List<PaymentDto>): List<DataPoint> {
-        val random = Random()
+    private fun setData(dataList: List<PaymentDto>): List<DataPoint> {
         var dataPoints: List<DataPoint> = emptyList()
        data = data.sortedBy { convertStringToDate(it.date).dayOfMonth}
 //        return (0..20).map {

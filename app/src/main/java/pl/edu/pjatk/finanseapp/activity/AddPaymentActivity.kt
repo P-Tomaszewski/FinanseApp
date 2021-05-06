@@ -9,6 +9,7 @@ import android.widget.EditText
 import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
 import androidx.room.Room
+import pl.edu.pjatk.finanseapp.MainActivity
 import pl.edu.pjatk.finanseapp.R
 import pl.edu.pjatk.finanseapp.database.PaymentDatabase
 import pl.edu.pjatk.finanseapp.database.PaymentDto

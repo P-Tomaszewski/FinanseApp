@@ -19,8 +19,6 @@ class ChartView(context: Context, attributeSet: AttributeSet): View(context, att
     private var xMax = 0
     private var yMin = 0
     private var yMax = 0
-    private var scaley1 = 0F
-    private var scalex1 = 0F
     private val dataPointPaint = Paint().apply {
         color = Color.BLUE
         strokeWidth = 7f
@@ -54,8 +52,8 @@ class ChartView(context: Context, attributeSet: AttributeSet): View(context, att
 
         super.onDraw(canvas)
 
-        var scaley = (height)/(yMax -yMin).toFloat()
-
+        var scaley = (height.toFloat())/(yMax -yMin).toFloat()
+        var scalex = ((width)/xMax).toFloat()
         dataSet.forEachIndexed { index, currentDataPoint ->
             val realX = currentDataPoint.xVal.toRealX()
             val realY = height - currentDataPoint.yVal.toRealY()
@@ -66,11 +64,11 @@ class ChartView(context: Context, attributeSet: AttributeSet): View(context, att
                 val startY = currentDataPoint.yVal.toRealY()
                 val endX = nextDataPoint.xVal.toRealX()
                 val endY =  nextDataPoint.yVal.toRealY()
-                canvas.drawLine(startX  , height - startY , endX, height - endY, dataPointLinePaint)
+                canvas.drawLine((startX - 40f), height- startY - 140f ,  endX - 40f , height - endY - 140f , dataPointLinePaint)
 
             }
-            canvas.drawCircle(realX, realY, 7f, dataPointFillPaint)
-            canvas.drawCircle(realX, realY, 7f, dataPointPaint)
+//            canvas.drawCircle(realX, realY, 7f, dataPointFillPaint)
+//            canvas.drawCircle(realX, realY, 7f, dataPointPaint)
         }
 
         var xMaxInt = 31
@@ -89,7 +87,7 @@ class ChartView(context: Context, attributeSet: AttributeSet): View(context, att
         }
 
         canvas.drawLine(40f, 0f, 40f, height.toFloat(), axisLinePaint)
-        canvas.drawLine(40f, height-yMin*scaley, width.toFloat(), height-yMin*scaley, axisLinePaint)
+        canvas.drawLine(40f, height - yMin*scaley, width.toFloat(), height-yMin*scaley, axisLinePaint)
     }
 
     fun setData(newDataSet: List<DataPoint>) {
